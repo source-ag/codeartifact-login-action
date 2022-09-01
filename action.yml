@@ -45,13 +45,14 @@ runs:
   using: "composite"
   steps:
     - name: Configure AWS credentials
-      uses: source-ag/add-aws-credentials-action@v1
+      uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ inputs.aws-access-key-id }}
         aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
         aws-region: ${{ inputs.aws-region }}
         role-to-assume: ${{ inputs.role-to-assume }}
         role-duration-seconds: 3600
+        role-skip-session-tagging: true
     - name: Fetch CodeArtifact metadata
       id: codeartifact-metadata
       shell: bash
