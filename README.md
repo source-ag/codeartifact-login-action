@@ -3,7 +3,7 @@
 Log into [AWS CodeArtifact](https://aws.amazon.com/codeartifact/) using AWS credentials and get 
 a temporary token for usage with Python package managers such as `pip` and `poetry`.
 
-Usage:
+## Usage
 
 ```yaml
 name: CI
@@ -45,4 +45,14 @@ jobs:
 
       - name: Install dependencies
         run: poetry install
+```
+
+## Outputs
+
+This action supplies the following outputs:
+
+```
+codeartifact-token: Temporary token to authenticate with AWS CodeArtifact repositories
+codeartifact-user: Username for usage with package tools such as pip and Poetry
+codeartifact-repo-url: URL for the specified repository
 ```
