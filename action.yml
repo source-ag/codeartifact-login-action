@@ -66,7 +66,7 @@ runs:
       shell: bash
       run: |
         if [ "${{ inputs.configure-pip }}" == "true" ]; then
-          pip config set site.index-url "https://aws:${{ steps.codeartifact-metadata.outputs.codeartifact-token }}@${{ steps.codeartifact-metadata.outputs.codeartifact-repo-url }}simple/"
+          aws codeartifact login --tool pip --domain  ${{ inputs.codeartifact-domain }} --domain-owner ${{ inputs.codeartifact-domain-owner }} --repository  ${{ inputs.codeartifact-repository }}
         fi
         if [ "${{ inputs.configure-poetry }}" == "true" ]; then
           poetry config repositories.${{ inputs.codeartifact-repository }} ${{ steps.codeartifact-metadata.outputs.codeartifact-repo-url }}
