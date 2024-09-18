@@ -30,6 +30,10 @@ inputs:
     description: Configure Poetry with temporary CodeArtifact credentials
     required: false
     default: "false"
+  configure-uv:
+    description: Configure uv with temporary CodeArtifact credentials
+    required: false
+    default: "false"
 outputs:
   codeartifact-token:
     description: "Temporary token to authenticate with AWS CodeArtifact repositories"
@@ -62,13 +66,23 @@ runs:
         if [ -n "${{ inputs.codeartifact-repository }}" ]; then
           echo "codeartifact-repo-url=$(aws codeartifact get-repository-endpoint --domain ${{ inputs.codeartifact-domain }} --domain-owner ${{ inputs.codeartifact-domain-owner }} --repository ${{ inputs.codeartifact-repository }} --format pypi --query repositoryEndpoint --output text)" >> $GITHUB_OUTPUT
         fi
-    - name: Configure package managers
+        
+    - name: Configure pip
       shell: bash
+      if: ${{ inputs.configure-pip == 'true' }}
+      run: aws codeartifact login --tool pip --domain  ${{ inputs.codeartifact-domain }} --domain-owner ${{ inputs.codeartifact-domain-owner }} --repository  ${{ inputs.codeartifact-repository }}
+
+    - name: Configure poetry
+      shell: bash
+      if: ${{ inputs.configure-poetry == 'true' }}
       run: |
-        if [ "${{ inputs.configure-pip }}" == "true" ]; then
-          aws codeartifact login --tool pip --domain  ${{ inputs.codeartifact-domain }} --domain-owner ${{ inputs.codeartifact-domain-owner }} --repository  ${{ inputs.codeartifact-repository }}
-        fi
-        if [ "${{ inputs.configure-poetry }}" == "true" ]; then
           poetry config repositories.${{ inputs.codeartifact-repository }} ${{ steps.codeartifact-metadata.outputs.codeartifact-repo-url }}
           poetry config http-basic.${{ inputs.codeartifact-repository }} aws ${{ steps.codeartifact-metadata.outputs.codeartifact-token }}
-        fi
+
+    - name: Configure uv
+      shell: bash
+      if: ${{ inputs.configure-uv == 'true' }}
+      run: |
+          TOKEN=${{ steps.codeartifact-metadata.outputs.codeartifact-token }}
+          URL=$(echo ${{ steps.codeartifact-metadata.outputs.codeartifact-repo-url }} | sed 's/^https:\/\///')
+          echo "UV_EXTRA_INDEX_URL=https://aws:${TOKEN}@${URL}simple" >> $GITHUB_ENV
